@@ -1,0 +1,148 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: survey
+    description: Survey operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /survey:
+    post:
+      operationId: submitSurvey
+      tags: [survey]
+      summary: Submit survey response
+      description: Stores an anonymous gym and health habits survey response in Supabase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SurveySubmission"
+      responses:
+        "201":
+          description: Survey response stored successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveySubmissionResult"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    SurveySubmission:
+      type: object
+      properties:
+        gym_frequency:
+          type: string
+          enum:
+            - Daily
+            - "3-5 times per week"
+            - "1-2 times per week"
+            - Rarely
+            - Never
+        fitness_goal:
+          type: string
+          enum:
+            - Build muscle
+            - Lose weight
+            - Improve endurance
+            - Stay healthy
+            - Other
+        workout_types:
+          type: array
+          items:
+            type: string
+            enum:
+              - Weightlifting
+              - Cardio
+              - "Classes (yoga, pilates, etc.)"
+              - Sports
+              - None
+          minItems: 1
+        diet_rating:
+          type: string
+          enum:
+            - Very healthy
+            - Somewhat healthy
+            - Neutral
+            - Somewhat unhealthy
+            - Very unhealthy
+        motivations:
+          type: array
+          items:
+            type: string
+            enum:
+              - Physical appearance
+              - Mental health
+              - Social reasons
+              - Routine/habit
+              - Athletic performance
+          minItems: 1
+        biggest_challenge:
+          type: string
+          minLength: 1
+        current_goal:
+          type: string
+          minLength: 1
+      required:
+        - gym_frequency
+        - fitness_goal
+        - workout_types
+        - diet_rating
+        - motivations
+        - biggest_challenge
+        - current_goal
+    SurveySubmissionResult:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+      required:
+        - id
+        - created_at
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
